@@ -25,5 +25,5 @@ namespace ChatV1.Services
                 Console.WriteLine($"Message received from Kafka: {consumeResult.Message.Value}");
             }
         }
-    }
+    } 
 }
