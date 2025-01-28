@@ -26,19 +26,21 @@ namespace ChatV1.Services
             using var consumer = new ConsumerBuilder<Null, string>(config).Build();
             consumer.Subscribe(_topic);
 
-            while (!cancellationToken.IsCancellationRequested)
+            await Task.Run(async () =>
             {
-                //var consumeResult = consumer.Consume(cancellationToken);
-
-                var consumeResult = consumer.Consume(TimeSpan.FromSeconds(5));
-                if (consumeResult != null)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    Console.WriteLine($"Message received from Kafka: {consumeResult.Message.Value}");
+                    var consumeResult = consumer.Consume(cancellationToken);
 
-                    await _hubContext.Clients.All.SendAsync("ReceivedMessage", "Kafka", consumeResult.Message.Value);
+                    if (consumeResult != null)
+                    {
+                        Console.WriteLine($"Message received from Kafka: {consumeResult.Message.Value}");
+
+                        await _hubContext.Clients.All.SendAsync("ReceivedMessage", "Kafka", consumeResult.Message.Value);
+                    }
+
                 }
-
-            }
+            }, cancellationToken);
         }
     } 
 }
