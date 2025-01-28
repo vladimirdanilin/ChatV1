@@ -1,10 +1,18 @@
-﻿using Confluent.Kafka;
+﻿using ChatV1.Hubs;
+using Confluent.Kafka;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatV1.Services
 {
     public class KafkaConsumerService : BackgroundService
     {
         private readonly string _topic = "test_topic";
+        private readonly IHubContext<ChatHub> _hubContext;
+
+        public KafkaConsumerService(IHubContext<ChatHub> hubContext)
+        {
+            _hubContext = hubContext;
+        }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
@@ -20,9 +28,16 @@ namespace ChatV1.Services
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var consumeResult = consumer.Consume(cancellationToken);
+                //var consumeResult = consumer.Consume(cancellationToken);
 
-                Console.WriteLine($"Message received from Kafka: {consumeResult.Message.Value}");
+                var consumeResult = consumer.Consume(TimeSpan.FromSeconds(5));
+                if (consumeResult != null)
+                {
+                    Console.WriteLine($"Message received from Kafka: {consumeResult.Message.Value}");
+
+                    await _hubContext.Clients.All.SendAsync("ReceivedMessage", "Kafka", consumeResult.Message.Value);
+                }
+
             }
         }
     } 
