@@ -19,7 +19,7 @@ namespace ChatV1.Services
             var config = new ConsumerConfig
             {
                 BootstrapServers = "localhost:9092",
-                GroupId = "consumer-group",
+                GroupId = "consumer-group-B",
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
 
