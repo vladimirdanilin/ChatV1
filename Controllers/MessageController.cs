@@ -12,12 +12,12 @@ namespace ChatV1.Controllers
             _producerService = producerService;
         }
 
-        [HttpPost]
+        /*[HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] string message)
         {
             await _producerService.SendMessageAsync("test_topic", message);
 
             return Ok("Message was sent to Kafka");
-        }
+        }*/
     }
 }

@@ -12,11 +12,17 @@ namespace ChatV1.Hubs
             _producerService = producerService;
         }
 
-        public async Task Send(string name, string message)
+        public async Task Send(string senderName, string message)
         {
-            await _producerService.SendMessageAsync("test_topic", $"{name}: {message}");
+            var senderId = Context.ConnectionId;
 
-            await Clients.All.SendAsync("broadcastMessage", name, message);
+            var chatMessage = new ChatMessage(senderId, senderName, message);
+
+            var jsonMessage = System.Text.Json.JsonSerializer.Serialize(chatMessage);
+
+            await _producerService.SendMessageAsync("test_topic", jsonMessage);
+
+            await Clients.All.SendAsync("broadcastMessage", senderName, message);
         }
     }
 }

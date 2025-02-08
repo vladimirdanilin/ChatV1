@@ -28,8 +28,10 @@
             messageInput.focus();
 
             // Starting connection
+            var baseUrl = window.location.protocol + "//" + window.location.host;
+
             var connection = new signalR.HubConnectionBuilder()
-                .withUrl('/chat')
+                .withUrl(baseUrl + '/chat')
                 .build();
 
             // Receiving messages from the hub

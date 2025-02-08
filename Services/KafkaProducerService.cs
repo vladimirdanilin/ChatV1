@@ -8,6 +8,8 @@ namespace ChatV1.Services
 
         public KafkaProducerService()
         {
+            //var bootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BROKER") ?? "kafka-setup:9092";
+
             var config = new ProducerConfig
             {
                 BootstrapServers = "localhost:9092"
@@ -15,10 +17,15 @@ namespace ChatV1.Services
             _producer = new ProducerBuilder<Null, string>(config).Build();
         }
 
-        public async Task SendMessageAsync(string topic, string message)
+        public async Task SendMessageAsync(string topic, string jsonMessage)
         {
-            await _producer.ProduceAsync(topic, new Message<Null, string> { Value = message });
-            Console.WriteLine($"Mesage {message} sent to topic {topic}");
+            await _producer.ProduceAsync(topic, new Message<Null, string> { Value = jsonMessage });
+
+            var jsonMessageDeserialized = System.Text.Json.JsonSerializer.Deserialize<ChatMessage>(jsonMessage);
+            var senderName = jsonMessageDeserialized?.SenderName;
+            var message = jsonMessageDeserialized?.Message;
+
+            Console.WriteLine($"Mesage from sender {senderName}: {message} sent to topic: {topic}");
         }
     }
 }

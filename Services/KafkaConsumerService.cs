@@ -16,10 +16,12 @@ namespace ChatV1.Services
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            //var bootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BROKER") ?? "kafka-setup:9092";
+
             var config = new ConsumerConfig
             {
                 BootstrapServers = "localhost:9092",
-                GroupId = "consumer-group-B",
+                GroupId = "consumer-group-A",
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
 
@@ -34,9 +36,17 @@ namespace ChatV1.Services
 
                     if (consumeResult != null)
                     {
-                        Console.WriteLine($"Message received from Kafka: {consumeResult.Message.Value}");
+                        var receivedData = System.Text.Json.JsonSerializer.Deserialize<ChatMessage>(consumeResult.Message.Value);
+                        
+                        string senderId = receivedData?.SenderId;
+                        string senderName = receivedData?.SenderName;
+                        string message = receivedData?.Message;
 
-                        await _hubContext.Clients.All.SendAsync("ReceivedMessage", "Kafka", consumeResult.Message.Value);
+                        Console.WriteLine($"Message received from {senderName}: {message}");
+
+                        await _hubContext.Clients
+                        .AllExcept(senderId)
+                        .SendAsync("broadcastMessage", senderName, message);
                     }
 
                 }
